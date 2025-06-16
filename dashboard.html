@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<base target="_top">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finans Takip Paneli</title>
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>
+  // Tailwind CSS özel renk ve yuvarlaklık ayarları
+  tailwind.config={theme:{extend:{colors:{primary:'#4f46e5',secondary:'#0ea5e9'},borderRadius:{'none':'0px','sm':'4px',DEFAULT:'8px','md':'12px','lg':'16px','xl':'20px','2xl':'24px','3xl':'32px','full':'9999px','button':'8px'}}}}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.0/echarts.min.js"></script>
+<style>
+  body {
+    font-family: 'Inter', sans-serif;
+  }
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #d1d5db;
+    border-radius: 8px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af;
+  }
+  .custom-checkbox {
+    position: relative;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+  }
+  .custom-checkbox input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    background-color: #fff;
+    border: 2px solid #d1d5db;
+    border-radius: 4px;
+  }
+  .custom-checkbox input:checked ~ .checkmark {
+    background-color: #4f46e5;
+    border-color: #4f46e5;
+  }
+  .checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+  }
+  .custom-checkbox input:checked ~ .checkmark:after {
+    display: block;
+  }
+  .custom-checkbox .checkmark:after {
+    left: 6px;
+    top: 2px;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  .custom-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+  }
+  .custom-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .switch-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #e5e7eb;
+    transition: .4s;
+    border-radius: 24px;
+  }
+  .switch-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+  }
+  input:checked + .switch-slider {
+    background-color: #4f46e5;
+  }
+  input:checked + .switch-slider:before {
+    transform: translateX(20px);
+  }
+  .custom-select {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+  }
+  .custom-select-selected {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background-color: white;
+    cursor: pointer;
+  }
+  .custom-select-options {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    margin-top: 4px;
+    background-color: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+  }
+  .custom-select-option {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+  }
+  .custom-select-option:hover {
+    background-color: #f3f4f6;
+  }
+  .custom-range {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 5px;
+    background: #e5e7eb;
+    outline: none;
+  }
+  .custom-range::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #4f46e5;
+    cursor: pointer;
+  }
+  .custom-range::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #4f46e5;
+    cursor: pointer;
+    border: none;
+  }
+
+  /* Tema Yönetimi için CSS Değişkenleri */
+  :root {
+      --bg-body: #f9fafb; /* gray-50 */
+      --bg-aside: #ffffff; /* white */
+      --border-color: #e5e7eb; /* gray-200 */
+      --text-primary-color: #4f46e5;
+      --text-secondary-color: #0ea5e9;
+      --text-default: #1f2937; /* gray-900 */
+      --text-secondary: #6b7280; /* gray-500 */
+      --bg-hover: #f3f4f6; /* gray-100 */
+  }
+
+  .dark-theme {
+      --bg-body: #1a202c; /* dark gray/black */
+      --bg-aside: #2d3748; /* darker gray */
+      --border-color: #4a5568; /* dark border */
+      --text-primary-color: #81e6d9; /* light teal */
+      --text-secondary-color: #63b3ed; /* light blue */
+      --text-default: #e2e8f0; /* light gray */
+      --text-secondary: #a0aec0; /* medium gray */
+      --bg-hover: #4a5568; /* dark gray hover */
+  }
+
+  body {
+      background-color: var(--bg-body);
+      color: var(--text-default);
+  }
+  aside {
+      background-color: var(--bg-aside);
+      border-right-color: var(--border-color);
+  }
+  .border-b, .border-t, .border-r, .border-l {
+      border-color: var(--border-color) !important;
+  }
+  .text-primary { color: var(--text-primary-color); }
+  .bg-primary { background-color: var(--text-primary-color); }
+  .text-gray-900 { color: var(--text-default); }
+  .text-gray-700 { color: var(--text-default); }
+  .text-gray-500 { color: var(--text-secondary); }
+  .hover\:bg-gray-100:hover { background-color: var(--bg-hover); }
+  .bg-white { background-color: var(--bg-aside); }
+  .border-gray-200 { border-color: var(--border-color); }
+  .bg-gray-50 { background-color: var(--bg-body); }
+  .custom-checkbox .checkmark {
+      background-color: var(--bg-aside);
+      border-color: var(--border-color);
+  }
+  .custom-checkbox input:checked ~ .checkmark {
+      background-color: var(--text-primary-color);
+      border-color: var(--text-primary-color);
+  }
+  .custom-select-selected, .custom-select-options {
+      background-color: var(--bg-aside);
+      border-color: var(--border-color);
+  }
+  .custom-select-option:hover {
+      background-color: var(--bg-hover);
+  }
+</style>
+</head>
+<body class="bg-gray-50">
+<div class="flex h-screen overflow-hidden">
+  <aside class="hidden md:flex md:flex-col md:w-64 bg-white border-r border-gray-200">
+    <div class="p-4 flex items-center justify-center border-b border-gray-200">
+      <span class="text-2xl font-['Pacifico'] text-primary">FinansTakip</span>
+    </div>
+    <div class="p-4 border-b border-gray-200">
+      <div class="flex items-center">
+        <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white">
+          <span class="text-lg font-semibold">AT</span>
+        </div>
+        <div class="ml-3">
+          <p class="text-sm font-medium text-gray-900">Kullanıcı Adı</p>
+          <p class="text-xs text-gray-500">kullanici@example.com</p>
+        </div>
+      </div>
+    </div>
+    <nav class="flex-1 px-2 py-4 space-y-1 overflow-y-auto custom-scrollbar">
+      <a href="#" id="nav-dashboard" class="flex items-center px-4 py-2 text-sm font-medium text-white bg-primary rounded-md">
+        <div class="w-6 h-6 mr-3 flex items-center justify-center"><i class="ri-dashboard-line"></i></div>Dashboard
+      </a>
+      <a href="#" id="nav-income-expense" class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md">
+        <div class="w-6 h-6 mr-3 flex items-center justify-center"><i class="ri-money-dollar-circle-line"></i></div>Gelir/Gider İşlemleri
+      </a>
+      <a href="#" id="nav-add-todo" class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md">
+        <div class="w-6 h-6 mr-3 flex items-center justify-center"><i class="ri-add-line"></i></div>Alacak/Borç Ekle
+      </a>
+      <a href="#" id="nav-new-month" class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md">
+        <div class="w-6 h-6 mr-3 flex items-center justify-center"><i class="ri-calendar-event-line"></i></div>Yeni Ay Oluştur
+      </a>
+      <a href="#" id="nav-past-months" class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md">
+        <div class="w-6 h-6 mr-3 flex items-center justify-center"><i class="ri-history-line"></i></div>Geçmiş Aylar
+      </a>
+      <a href="#" id="nav-settings" class="flex items-center px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md">
+        <div class="w-6 h-6 mr-3 flex items-center justify-center"><i class="ri-settings-line"></i></div>Ayarlar
+      </a>
+      <div class="mt-4 pt-4 border-t border-gray-200">
+        <p class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tema</p>
+        <div class="flex items-center justify-between px-4 py-2">
+          <span class="text-sm font-medium text-gray-700">Koyu Mod</span>
+          <label class="custom-switch"><input type="checkbox" id="dark-mode-toggle"><span class="switch-slider"></span></label>
+        </div>
+      </div>
+    </nav>
+  </aside>
+
+  <div class="flex-1 flex flex-col overflow-hidden">
+    <header class="bg-white border-b border-gray-200"><div class="flex items-center justify-between px-4 py-3"></div></header>
+    <main class="flex-1 overflow-y-auto p-4 bg-gray-50" id="main-content-area">
+      <div class="flex items-center justify-center h-full text-gray-500">
+          <i class="ri-loader-4-line ri-spin ri-2x mr-2"></i><span>Veriler yükleniyor...</span>
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="modal-container"></div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const mainContentArea = document.getElementById('main-content-area');
+    const navLinks = document.querySelectorAll('aside nav a');
+
+    // --- Başlangıç Yüklemesi ---
+    loadPageContent('Dashboard');
+
+    // --- Tema Yönetimi ---
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
+    google.script.run.withSuccessHandler(theme => {
+        if (theme === 'dark') {
+            document.body.classList.add('dark-theme');
+            darkModeToggle.checked = true;
+        }
+    }).getTheme();
+    darkModeToggle.addEventListener('change', function() {
+        const newTheme = this.checked ? 'dark' : 'light';
+        document.body.classList.toggle('dark-theme', this.checked);
+        google.script.run.setTheme(newTheme);
+    });
+
+    // --- Sayfa Yükleyici Fonksiyonu ---
+    window.loadPageContent = function(pageName) {
+        mainContentArea.innerHTML = `<div class="flex items-center justify-center h-full text-gray-500"><i class="ri-loader-4-line ri-spin ri-2x mr-2"></i><span>${pageName} yükleniyor...</span></div>`;
+        updateNavLinks(pageName);
+        
+        if (pageName === 'Dashboard') {
+            google.script.run.withSuccessHandler(renderDashboard).withFailureHandler(showError).getDashboardData();
+        }
+    }
+
+    // --- Render Fonksiyonları ---
+    function renderDashboard(data) {
+        if (data.error) {
+            showError(new Error(data.message));
+            return;
+        }
+
+        google.script.run.withSuccessHandler(function(html) {
+            mainContentArea.innerHTML = html.getContent();
+            
+            // !!!!!!!!!! ZAMANLAMA HATASI DÜZELTMESİ !!!!!!!!!!
+            setTimeout(function() {
+                initializeDashboardContent(data);
+            }, 0);
+
+        }).withFailureHandler(showError).loadPage('DashboardContent');
+    }
+
+    function showError(error) {
+        mainContentArea.innerHTML = `<div class="p-4 bg-red-100 text-red-700 rounded-md"><p class="font-bold">Bir hata oluştu!</p><p>${error.message}</p></div>`;
+        console.error("Apps Script Hatası:", error);
+    }
+    
+    function updateNavLinks(activePage) {
+        navLinks.forEach(link => {
+            link.classList.remove('bg-primary', 'text-white');
+            link.classList.add('text-gray-700', 'hover:bg-gray-100');
+            if (link.id === `nav-${activePage.toLowerCase()}`) {
+                link.classList.add('bg-primary', 'text-white');
+                link.classList.remove('text-gray-700', 'hover:bg-gray-100');
+            }
+        });
+    }
+
+    // --- Navigasyon Eventleri ---
+    document.getElementById('nav-dashboard').addEventListener('click', e => { e.preventDefault(); loadPageContent('Dashboard'); });
+    
+    document.getElementById('nav-new-month').addEventListener('click', e => {
+        e.preventDefault();
+        mainContentArea.innerHTML = `<div class="flex items-center justify-center h-full text-gray-500"><i class="ri-loader-4-line ri-spin ri-2x mr-2"></i><span>Yeni ay oluşturuluyor...</span></div>`;
+        google.script.run.withSuccessHandler(response => {
+             if(response.success) {
+                alert(response.message);
+                loadPageContent('Dashboard');
+             } else {
+                showError(new Error(response.message));
+             }
+        }).withFailureHandler(showError).createNewMonthSheet();
+    });
+    
+    // --- Dashboard İçeriğini Doldurma Fonksiyonu ---
+    function initializeDashboardContent(data) {
+        try {
+            document.getElementById('current-month-name').textContent = data.currentMonthName;
+            document.getElementById('today-date').textContent = data.todayDate;
+            document.getElementById('total-income').textContent = data.totalIncome;
+            document.getElementById('total-expense').textContent = data.totalExpense;
+            document.getElementById('net-balance').textContent = data.netBalance;
+
+            const transactionsTbody = document.getElementById('transactions-tbody');
+            transactionsTbody.innerHTML = '';
+            if (data.transactions && data.transactions.length > 0) {
+                data.transactions.slice(0, 5).forEach(t => {
+                    const typeColor = t.type === 'Gelir' ? 'text-green-600' : 'text-red-600';
+                    const sign = t.type === 'Gelir' ? '+' : '-';
+                    const row = `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap"><div class="text-sm font-medium text-gray-900"><span class="math-inline">\{t\.description\}</div\><div class\="text\-sm text\-gray\-500"\></span>{t.category}</div></td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${t.date}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium <span class="math-inline">\{typeColor\}"\></span>{sign}${t.amount}</td>
+                        </tr>`;
+                    transactionsTbody.insertAdjacentHTML('beforeend', row);
+                });
+            } else {
+                transactionsTbody.innerHTML = `<tr><td colspan="3" class="text-center p-4 text-gray-500">Bu ay için henüz işlem yok.</td></tr>`;
+            }
+
+            const incomeExpenseChartEl = document.getElementById('income-expense-chart');
+            if (incomeExpenseChartEl) echarts.init(incomeExpenseChartEl).setOption({
+                tooltip: { trigger: 'axis' }, legend: { data: ['Gelir', 'Gider'], textStyle: { color: 'var(--text-default)'} },
+                xAxis: { type: 'category', data: data.historicalData.months, axisLine: { lineStyle: { color: 'var(--border-color)'}}, axisLabel: { color: 'var(--text-default)'}},
+                yAxis: { type: 'value', axisLine: { lineStyle: { color: 'var(--border-color)'}}, axisLabel: { color: 'var(--text-default)'}},
+                grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+                series: [
+                    { name: 'Gelir', type: 'line', smooth: true, data: data.historicalData.income, areaStyle: {} },
+                    { name: 'Gider', type: 'line', smooth: true, data: data.historicalData.expense, areaStyle: {} }
+                ]
+            });
+
+            const categoryChartEl = document.getElementById('category-chart');
+            if (categoryChartEl) echarts.init(categoryChartEl).setOption({
+                tooltip: { trigger: 'item' },
+                legend: { show: false },
+                series: [{ name: 'Harcama Kategorileri', type: 'pie', radius: ['50%', '70%'], data: data.expenseCategoryChartData }]
+            });
+        } catch(e) {
+            console.error("Dashboard içeriği doldurulurken hata:", e);
+            showError(e);
+        }
+    }
+  });
+</script>
+</body>
+</html>
